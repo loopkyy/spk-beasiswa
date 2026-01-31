@@ -609,7 +609,7 @@
         </div>
     </div>
     
-    <!-- Custom JS untuk hasil (pisah) -->
+    <!-- JS -->
     <script src="{{ asset('js/result-script.js') }}"></script>
 </body>
 </html>
