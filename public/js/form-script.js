@@ -234,8 +234,6 @@ const prodiData = {
 if (fakultasSelect) {
     fakultasSelect.addEventListener('change', function() {
         const selectedFakultas = this.value;
-        
-        // Reset Prodi options
         prodiSelect.innerHTML = '<option value="">Pilih Program Studi</option>';
         
         if (selectedFakultas && prodiData[selectedFakultas]) {
