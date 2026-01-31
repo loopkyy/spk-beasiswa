@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SK Beasiswa</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -562,7 +561,7 @@
         </div>
     </div>
     
-    <!-- Script JS -->
+    <!--  JS -->
      <script src="{{ asset('js/form-script.js') }}"></script>
 </body>
 </html>
