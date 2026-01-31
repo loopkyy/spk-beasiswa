@@ -12,8 +12,6 @@ class BeasiswaHelper
         if (!is_numeric($angka)) {
             return 'Rp 0';
         }
-        
-        // Jika angka dalam juta (input)
         if ($inJuta && $angka < 1000) {
             $angka = $angka * 1000000;
         }
@@ -35,26 +33,23 @@ public static function formatTelepon($telepon)
     
     // Tentukan format berdasarkan panjang
     if ($length == 10) {
-        // Format 10 digit: XXX-XXX-XXXX atau XXXX-XXX-XXX (Indonesia umum)
-        // Biasanya: 0812-345-678
         return substr($clean, 0, 4) . '-' . 
                substr($clean, 4, 3) . '-' . 
                substr($clean, 7, 3);
     }
     elseif ($length == 11) {
-        // Format 11 digit: XXXX-XXXX-XXX
+        // Format 11 digit
         return substr($clean, 0, 4) . '-' . 
                substr($clean, 4, 4) . '-' . 
                substr($clean, 8, 3);
     }
     elseif ($length == 12) {
-        // Format 12 digit: XXXX-XXXX-XXXX (default)
+        // Format 12 digit
         return substr($clean, 0, 4) . '-' . 
                substr($clean, 4, 4) . '-' . 
                substr($clean, 8, 4);
     }
     else { // 13 digit
-        // Format 13 digit: XXXX-XXXX-XXXXX
         return substr($clean, 0, 4) . '-' . 
                substr($clean, 4, 4) . '-' . 
                substr($clean, 8, 5);
@@ -78,10 +73,8 @@ public static function validateTeleponIndonesia($telepon)
         return false;
     }
     
-    // Digit kedua biasanya 8 (untuk nomor seluler Indonesia)
+    // Digit kedua biasanya 8
     if (strlen($clean) >= 2 && $clean[0] == '0' && $clean[1] != '8') {
-        // Boleh angka lain untuk telepon rumah
-        // return false; // Opsional
     }
     
     return true;
@@ -108,7 +101,7 @@ public static function normalizeTelepon($telepon)
 }
 
 /**
- * Cek apakah nomor telepon valid (dengan pesan error)
+ * Cek apakah nomor telepon valid
  */
 public static function validateTeleponWithMessage($telepon)
 {
