@@ -1,4 +1,3 @@
-// Initialize Chart
 function initializeScoreChart() {
     const ctx = document.getElementById('scoreChart');
     if (!ctx || !window.scoreBreakdown) return;
