@@ -195,7 +195,7 @@ class BeasiswaController extends Controller
     {
         $skor = 0;
         
-        // 1. SKOR AKADEMIK (Max 40)
+        //  SKOR AKADEMIK (Max 40)
         if ($ipk >= 3.5) $skor += 40;
         elseif ($ipk >= 3.0) $skor += 30;
         elseif ($ipk >= 2.5) $skor += 20;
@@ -207,7 +207,7 @@ class BeasiswaController extends Controller
             $skor += min($academicBonus, 10);
         }
         
-        // 2. SKOR EKONOMI (Max 35)
+        // SKOR EKONOMI (Max 35)
         if ($penghasilan <= 2) $skor += 35;
         elseif ($penghasilan <= 4) $skor += 25;
         elseif ($penghasilan <= 6) $skor += 15;
@@ -219,10 +219,9 @@ class BeasiswaController extends Controller
         elseif ($tanggungan >= 2) $skor += 8;
         else $skor += 5;
         
-        // 4. SKOR PRESTASI (Max 20)
+        //  SKOR PRESTASI (Max 20)
         if ($prestasi == 'ya') {
-            $skor += 10; // Base score
-            
+            $skor += 10;
             // Bonus detail prestasi
             $prestasiBonus = 0;
             if (isset($prestasiDetails['non_akademik'])) {
