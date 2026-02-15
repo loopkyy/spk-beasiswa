@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SK Beasiswa</title>
+    <title>ELIGORA</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,7 +31,7 @@
                         </div>
                         <div>
                             <h1 class="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                                Sk Beasiswa
+                                ELIGORA
                             </h1>
                         </div>
                     </div>
@@ -40,11 +40,10 @@
             
             <div class="max-w-3xl mx-auto text-center mb-10">
                 <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-                    Cek Kelayakan
-                    <span class="gradient-text">Beasiswa</span>
+                    Decision Support System
                 </h2>
                 <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                    Sistem pakar AI yang menganalisis kelayakan beasiswa Anda
+                    Sistem Pendukung Keputusan Kelayakan Beasiswa Berbasis Rule-Based
                 </p>
             </div>
         </div>
@@ -541,7 +540,7 @@
                 <div class="mt-12 text-center">
                     <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                         <div class="text-gray-600 text-sm">
-                            <p>© 2026 SkBeasiswa</p>
+                            <p>© 2026 ELIGORA</p>
                         </div>
                         
                         <div class="flex items-center space-x-6">
