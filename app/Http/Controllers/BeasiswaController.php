@@ -148,239 +148,205 @@ class BeasiswaController extends Controller
         ]);
     }
 
-    private function evaluateRules($ipk, $penghasilan, $tanggungan, $prestasi)
-    {
-        // Rule 1: Sangat Layak - IPK tinggi, ekonomi rendah
-        if ($ipk >= 3.5 && $penghasilan <= 3) {
-            return 'SANGAT LAYAK';
-        }
-        
-        // Rule 2: Layak - IPK tinggi, ekonomi menengah
-        if ($ipk >= 3.5 && $penghasilan > 3 && $penghasilan <= 5) {
-            return 'LAYAK';
-        }
-        
-        // Rule 3: Layak - IPK baik, ekonomi rendah, tanggungan banyak
-        if ($ipk >= 3.0 && $ipk < 3.5 && $penghasilan <= 5) {
-            if ($tanggungan >= 3) {
-                return 'LAYAK';
-            } else {
-                return 'CUKUP LAYAK';
-            }
-        }
-        
-        // Rule 4: Kurang Layak - IPK baik tapi ekonomi tinggi
-        if ($ipk >= 3.0 && $ipk < 3.5 && $penghasilan > 5) {
-            return 'KURANG LAYAK';
-        }
-        
-        // Rule 5: Cukup Layak - IPK rendah tapi punya prestasi
-        if ($ipk < 3.0) {
-            if ($prestasi == 'ya') {
-                return 'CUKUP LAYAK';
-            } else {
-                return 'TIDAK LAYAK';
-            }
-        }
-        
-        // Rule 6: Special Case - IPK rendah, ekonomi sangat rendah
-        if ($ipk >= 2.5 && $ipk < 3.0 && $penghasilan <= 2) {
-            return 'CUKUP LAYAK';
-        }
-        
-        return 'TIDAK TERDEFINISI';
+private function evaluateRules($ipk, $penghasilan, $tanggungan, $prestasi)
+{
+    // PRIORITAS 1: SANGAT LAYAK
+    if ($ipk >= 3.5 && $penghasilan <= 3 && 
+        ($tanggungan >= 3 || $prestasi == 'ya')) {
+        return 'SANGAT LAYAK';
     }
 
-    private function calculateSimpleScore($ipk, $penghasilan, $tanggungan, $prestasi, $prestasiDetails = [])
-    {
-        $skor = 0;
-        
-        //  SKOR AKADEMIK (Max 40)
-        if ($ipk >= 3.5) $skor += 40;
-        elseif ($ipk >= 3.0) $skor += 30;
-        elseif ($ipk >= 2.5) $skor += 20;
-        else $skor += 10;
-        
-        // Bonus prestasi akademik (Max 10)
-        if (isset($prestasiDetails['akademik'])) {
-            $academicBonus = count($prestasiDetails['akademik']) * 5;
-            $skor += min($academicBonus, 10);
-        }
-        
-        // SKOR EKONOMI (Max 35)
-        if ($penghasilan <= 2) $skor += 35;
-        elseif ($penghasilan <= 4) $skor += 25;
-        elseif ($penghasilan <= 6) $skor += 15;
-        else $skor += 5;
-        
-        // 3. SKOR TANGGUNGAN (Max 15)
-        if ($tanggungan >= 4) $skor += 15;
-        elseif ($tanggungan >= 3) $skor += 12;
-        elseif ($tanggungan >= 2) $skor += 8;
-        else $skor += 5;
-        
-        //  SKOR PRESTASI (Max 20)
-        if ($prestasi == 'ya') {
-            $skor += 10;
-            // Bonus detail prestasi
-            $prestasiBonus = 0;
-            if (isset($prestasiDetails['non_akademik'])) {
-                $prestasiBonus += count($prestasiDetails['non_akademik']) * 3;
-            }
-            if (isset($prestasiDetails['penelitian'])) {
-                $prestasiBonus += count($prestasiDetails['penelitian']) * 4;
-            }
-            if (!empty($prestasiDetails['lainnya'])) {
-                $prestasiBonus += 5;
-            }
-            
-            $skor += min($prestasiBonus, 10);
-        }
-        
-        return min($skor, 100);
+    // PRIORITAS 2: LAYAK
+    elseif ($ipk >= 3.5 && $penghasilan <= 5) {
+        return 'LAYAK';
     }
 
-    private function getSimpleScoreBreakdown($ipk, $penghasilan, $tanggungan, $prestasi, $prestasiDetails)
-    {
-        $breakdown = [];
-        
-        // IPK Score
-        if ($ipk >= 3.5) $breakdown['ipk'] = 40;
-        elseif ($ipk >= 3.0) $breakdown['ipk'] = 30;
-        elseif ($ipk >= 2.5) $breakdown['ipk'] = 20;
-        else $breakdown['ipk'] = 10;
-        
-        // Academic Bonus
-        $academicBonus = 0;
-        if (isset($prestasiDetails['akademik'])) {
-            $academicBonus = min(count($prestasiDetails['akademik']) * 5, 10);
-        }
-        $breakdown['akademik_bonus'] = $academicBonus;
-        
-        // Income Score
-        if ($penghasilan <= 2) $breakdown['penghasilan'] = 35;
-        elseif ($penghasilan <= 4) $breakdown['penghasilan'] = 25;
-        elseif ($penghasilan <= 6) $breakdown['penghasilan'] = 15;
-        else $breakdown['penghasilan'] = 5;
-        
-        // Dependents Score
-        if ($tanggungan >= 4) $breakdown['tanggungan'] = 15;
-        elseif ($tanggungan >= 3) $breakdown['tanggungan'] = 12;
-        elseif ($tanggungan >= 2) $breakdown['tanggungan'] = 8;
-        else $breakdown['tanggungan'] = 5;
-        
-        // Prestasi Score
-        $prestasiScore = 0;
-        if ($prestasi == 'ya') {
-            $prestasiScore = 10;
-            
-            $prestasiBonus = 0;
-            if (isset($prestasiDetails['non_akademik'])) {
-                $prestasiBonus += count($prestasiDetails['non_akademik']) * 3;
-            }
-            if (isset($prestasiDetails['penelitian'])) {
-                $prestasiBonus += count($prestasiDetails['penelitian']) * 4;
-            }
-            if (!empty($prestasiDetails['lainnya'])) {
-                $prestasiBonus += 5;
-            }
-            
-            $prestasiScore += min($prestasiBonus, 10);
-        }
-        $breakdown['prestasi'] = $prestasiScore;
-        
-        return $breakdown;
+    // PRIORITAS 3: LAYAK
+    elseif ($ipk >= 3.0 && $ipk < 3.5 && 
+            $penghasilan <= 5 && $tanggungan >= 3) {
+        return 'LAYAK';
     }
 
-    private function getAppliedRules($ipk, $penghasilan, $tanggungan, $prestasi)
-    {
-        $appliedRules = [];
-        
-        // Rule 1
-        if ($ipk >= 3.5 && $penghasilan <= 3) {
-            $appliedRules[] = [
-                'rule' => 'Rule 1',
-                'condition' => 'IPK ≥ 3.5 AND Penghasilan ≤ 3 juta',
-                'result' => 'SANGAT LAYAK',
-                'priority' => 1
-            ];
-        }
-        
-        // Rule 2
-        if ($ipk >= 3.5 && $penghasilan > 3 && $penghasilan <= 5) {
-            $appliedRules[] = [
-                'rule' => 'Rule 2',
-                'condition' => 'IPK ≥ 3.5 AND Penghasilan > 3 juta AND Penghasilan ≤ 5 juta',
-                'result' => 'LAYAK',
-                'priority' => 2
-            ];
-        }
-        
-        // Rule 3
-        if ($ipk >= 3.0 && $ipk < 3.5 && $penghasilan <= 5 && $tanggungan >= 3) {
-            $appliedRules[] = [
-                'rule' => 'Rule 3',
-                'condition' => 'IPK ≥ 3.0 AND IPK < 3.5 AND Penghasilan ≤ 5 juta AND Tanggungan ≥ 3',
-                'result' => 'LAYAK',
-                'priority' => 3
-            ];
-        }
-        
-        // Rule 4
-        if ($ipk >= 3.0 && $ipk < 3.5 && $penghasilan <= 5 && $tanggungan < 3) {
-            $appliedRules[] = [
-                'rule' => 'Rule 4',
-                'condition' => 'IPK ≥ 3.0 AND IPK < 3.5 AND Penghasilan ≤ 5 juta AND Tanggungan < 3',
-                'result' => 'CUKUP LAYAK',
-                'priority' => 4
-            ];
-        }
-        
-        // Rule 5
-        if ($ipk >= 3.0 && $ipk < 3.5 && $penghasilan > 5) {
-            $appliedRules[] = [
-                'rule' => 'Rule 5',
-                'condition' => 'IPK ≥ 3.0 AND IPK < 3.5 AND Penghasilan > 5 juta',
-                'result' => 'KURANG LAYAK',
-                'priority' => 5
-            ];
-        }
-        
-        // Rule 6
-        if ($ipk < 3.0 && $prestasi == 'ya') {
-            $appliedRules[] = [
-                'rule' => 'Rule 6',
-                'condition' => 'IPK < 3.0 AND Prestasi = ya',
-                'result' => 'CUKUP LAYAK',
-                'priority' => 6
-            ];
-        }
-        
-        // Rule 7
-        if ($ipk < 3.0 && $prestasi == 'tidak') {
-            $appliedRules[] = [
-                'rule' => 'Rule 7',
-                'condition' => 'IPK < 3.0 AND Prestasi = tidak',
-                'result' => 'TIDAK LAYAK',
-                'priority' => 7
-            ];
-        }
-        
-        // Rule 8 - Special Case
-        if ($ipk >= 2.5 && $ipk < 3.0 && $penghasilan <= 2) {
-            $appliedRules[] = [
-                'rule' => 'Rule 8',
-                'condition' => 'IPK ≥ 2.5 AND IPK < 3.0 AND Penghasilan ≤ 2 juta',
-                'result' => 'CUKUP LAYAK',
-                'priority' => 8
-            ];
-        }
-        
-        // Sort by priority
-        usort($appliedRules, function($a, $b) {
-            return $a['priority'] <=> $b['priority'];
-        });
-        
-        return $appliedRules;
+    // PRIORITAS 4: CUKUP LAYAK
+    elseif ($ipk >= 3.0 && $ipk < 3.5 && $penghasilan <= 5) {
+        return 'CUKUP LAYAK';
     }
+
+    // PRIORITAS 5: CUKUP LAYAK (Kompensasi Prestasi)
+    elseif ($ipk < 3.0 && $prestasi == 'ya' && $penghasilan <= 3) {
+        return 'CUKUP LAYAK';
+    }
+
+    return 'TIDAK LAYAK';
 }
+
+private function calculateSimpleScore($ipk, $penghasilan, $tanggungan, $prestasi, $prestasiDetails = [])
+{
+    $skor = 0;
+    // SKOR IPK (Max 35)
+    if ($ipk >= 3.5) $skor += 35;
+    elseif ($ipk >= 3.0) $skor += 28;
+    elseif ($ipk >= 2.5) $skor += 20;
+    else $skor += 10;
+
+    // SKOR EKONOMI (Max 35)
+    if ($penghasilan <= 2) $skor += 35;
+    elseif ($penghasilan <= 4) $skor += 28;
+    elseif ($penghasilan <= 6) $skor += 18;
+    else $skor += 8;
+
+    // SKOR TANGGUNGAN (Max 15)
+    if ($tanggungan >= 4) $skor += 15;
+    elseif ($tanggungan == 3) $skor += 12;
+    elseif ($tanggungan == 2) $skor += 8;
+    else $skor += 5;
+
+    // SKOR PRESTASI (Max 15)
+    if ($prestasi == 'ya') {
+
+        $prestasiScore = 5;
+
+        $bonus = 0;
+
+        if (!empty($prestasiDetails['akademik'])) {
+            $bonus += count($prestasiDetails['akademik']) * 2;
+        }
+
+        if (!empty($prestasiDetails['non_akademik'])) {
+            $bonus += count($prestasiDetails['non_akademik']) * 2;
+        }
+
+        if (!empty($prestasiDetails['penelitian'])) {
+            $bonus += count($prestasiDetails['penelitian']) * 3;
+        }
+
+        if (!empty($prestasiDetails['lainnya'])) {
+            $bonus += 3;
+        }
+
+        $prestasiScore += min($bonus, 10);
+
+        $skor += $prestasiScore;
+    }
+
+    return $skor;
+}
+
+   private function getSimpleScoreBreakdown($ipk, $penghasilan, $tanggungan, $prestasi, $prestasiDetails)
+{
+    $breakdown = [];
+    // SKOR IPK (Max 35)
+    if ($ipk >= 3.5) $breakdown['ipk'] = 35;
+    elseif ($ipk >= 3.0) $breakdown['ipk'] = 28;
+    elseif ($ipk >= 2.5) $breakdown['ipk'] = 20;
+    else $breakdown['ipk'] = 10;
+
+    // SKOR EKONOMI (Max 35)
+    if ($penghasilan <= 2) $breakdown['penghasilan'] = 35;
+    elseif ($penghasilan <= 4) $breakdown['penghasilan'] = 28;
+    elseif ($penghasilan <= 6) $breakdown['penghasilan'] = 18;
+    else $breakdown['penghasilan'] = 8;
+
+    // SKOR TANGGUNGAN (Max 15)
+    if ($tanggungan >= 4) $breakdown['tanggungan'] = 15;
+    elseif ($tanggungan == 3) $breakdown['tanggungan'] = 12;
+    elseif ($tanggungan == 2) $breakdown['tanggungan'] = 8;
+    else $breakdown['tanggungan'] = 5;
+
+    // SKOR PRESTASI (Max 15)
+    $prestasiScore = 0;
+
+    if ($prestasi == 'ya') {
+        $prestasiScore += 5;
+
+        $bonus = 0;
+
+        if (!empty($prestasiDetails['akademik'])) {
+            $bonus += count($prestasiDetails['akademik']) * 2;
+        }
+
+        if (!empty($prestasiDetails['non_akademik'])) {
+            $bonus += count($prestasiDetails['non_akademik']) * 2;
+        }
+
+        if (!empty($prestasiDetails['penelitian'])) {
+            $bonus += count($prestasiDetails['penelitian']) * 3;
+        }
+
+        if (!empty($prestasiDetails['lainnya'])) {
+            $bonus += 3;
+        }
+
+        $prestasiScore += min($bonus, 10);
+    }
+
+    $breakdown['prestasi'] = $prestasiScore;
+
+    return $breakdown;
+}
+
+
+private function getAppliedRules($ipk, $penghasilan, $tanggungan, $prestasi)
+{
+    $appliedRules = [];
+
+    if ($ipk >= 3.5 && $penghasilan <= 3 && 
+        ($tanggungan >= 3 || $prestasi == 'ya')) {
+        $appliedRules[] = [
+            'rule' => 'Rule 1',
+            'condition' => 'IPK ≥ 3.5 AND Penghasilan ≤ 3 AND (Tanggungan ≥ 3 OR Prestasi = ya)',
+            'result' => 'SANGAT LAYAK',
+            'priority' => 1
+        ];
+    }
+
+    elseif ($ipk >= 3.5 && $penghasilan <= 5) {
+        $appliedRules[] = [
+            'rule' => 'Rule 2',
+            'condition' => 'IPK ≥ 3.5 AND Penghasilan ≤ 5',
+            'result' => 'LAYAK',
+            'priority' => 2
+        ];
+    }
+
+    elseif ($ipk >= 3.0 && $ipk < 3.5 && 
+            $penghasilan <= 5 && $tanggungan >= 3) {
+        $appliedRules[] = [
+            'rule' => 'Rule 3',
+            'condition' => '3.0 ≤ IPK < 3.5 AND Penghasilan ≤ 5 AND Tanggungan ≥ 3',
+            'result' => 'LAYAK',
+            'priority' => 3
+        ];
+    }
+
+    elseif ($ipk >= 3.0 && $ipk < 3.5 && $penghasilan <= 5) {
+        $appliedRules[] = [
+            'rule' => 'Rule 4',
+            'condition' => '3.0 ≤ IPK < 3.5 AND Penghasilan ≤ 5',
+            'result' => 'CUKUP LAYAK',
+            'priority' => 4
+        ];
+    }
+
+    elseif ($ipk < 3.0 && $prestasi == 'ya' && $penghasilan <= 3) {
+        $appliedRules[] = [
+            'rule' => 'Rule 5',
+            'condition' => 'IPK < 3.0 AND Prestasi = ya AND Penghasilan ≤ 3',
+            'result' => 'CUKUP LAYAK',
+            'priority' => 5
+        ];
+    }
+
+    else {
+        $appliedRules[] = [
+            'rule' => 'Rule 6',
+            'condition' => 'Tidak memenuhi kriteria',
+            'result' => 'TIDAK LAYAK',
+            'priority' => 6
+        ];
+    }
+
+    return $appliedRules;
+}
+
+    }
