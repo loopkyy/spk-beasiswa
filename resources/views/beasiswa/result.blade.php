@@ -588,7 +588,7 @@
     <div class="container mx-auto px-4"> <div class="flex flex-row items-center justify-between">
             
             <div class="text-gray-500 text-sm">
-                <p>© 2026 SkBeasiswa</p>
+                <p>© 2026 ELIGORA</p>
             </div>
             
             <div class="flex items-center space-x-6">
