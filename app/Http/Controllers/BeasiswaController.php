@@ -150,36 +150,28 @@ class BeasiswaController extends Controller
 
 private function evaluateRules($ipk, $penghasilan, $tanggungan, $prestasi)
 {
-    // PRIORITAS 1: SANGAT LAYAK
-    if ($ipk >= 3.5 && $penghasilan <= 3 && 
-        ($tanggungan >= 3 || $prestasi == 'ya')) {
+    // SANGAT LAYAK
+    if (
+        $ipk >= 3.5 &&
+        $penghasilan <= 3 &&
+        ($tanggungan >= 3 || $prestasi == 'ya')
+    ) {
         return 'SANGAT LAYAK';
     }
 
-    // PRIORITAS 2: LAYAK
-    elseif ($ipk >= 3.5 && $penghasilan <= 5) {
+    // LAYAK
+    elseif (
+        ($ipk >= 3.5 && $penghasilan > 3) ||
+        ($ipk < 3.5 && $penghasilan <= 3 && ($tanggungan >= 3 || $prestasi == 'ya'))
+    ) {
         return 'LAYAK';
     }
 
-    // PRIORITAS 3: LAYAK
-    elseif ($ipk >= 3.0 && $ipk < 3.5 && 
-            $penghasilan <= 5 && $tanggungan >= 3) {
-        return 'LAYAK';
+    // TIDAK LAYAK
+    else {
+        return 'TIDAK LAYAK';
     }
-
-    // PRIORITAS 4: CUKUP LAYAK
-    elseif ($ipk >= 3.0 && $ipk < 3.5 && $penghasilan <= 5) {
-        return 'CUKUP LAYAK';
-    }
-
-    // PRIORITAS 5: CUKUP LAYAK (Kompensasi Prestasi)
-    elseif ($ipk < 3.0 && $prestasi == 'ya' && $penghasilan <= 3) {
-        return 'CUKUP LAYAK';
-    }
-
-    return 'TIDAK LAYAK';
 }
-
 private function calculateSimpleScore($ipk, $penghasilan, $tanggungan, $prestasi, $prestasiDetails = [])
 {
     $skor = 0;
@@ -290,8 +282,12 @@ private function getAppliedRules($ipk, $penghasilan, $tanggungan, $prestasi)
 {
     $appliedRules = [];
 
-    if ($ipk >= 3.5 && $penghasilan <= 3 && 
-        ($tanggungan >= 3 || $prestasi == 'ya')) {
+    // RULE 1 - SANGAT LAYAK
+    if (
+        $ipk >= 3.5 &&
+        $penghasilan <= 3 &&
+        ($tanggungan >= 3 || $prestasi == 'ya')
+    ) {
         $appliedRules[] = [
             'rule' => 'Rule 1',
             'condition' => 'IPK ≥ 3.5 AND Penghasilan ≤ 3 AND (Tanggungan ≥ 3 OR Prestasi = ya)',
@@ -300,53 +296,30 @@ private function getAppliedRules($ipk, $penghasilan, $tanggungan, $prestasi)
         ];
     }
 
-    elseif ($ipk >= 3.5 && $penghasilan <= 5) {
+    // RULE 2 - LAYAK
+    elseif (
+        ($ipk >= 3.5 && $penghasilan > 3) ||
+        ($ipk < 3.5 && $penghasilan <= 3 &&
+         ($tanggungan >= 3 || $prestasi == 'ya'))
+    ) {
         $appliedRules[] = [
             'rule' => 'Rule 2',
-            'condition' => 'IPK ≥ 3.5 AND Penghasilan ≤ 5',
+            'condition' => '(IPK ≥ 3.5 AND Penghasilan > 3) OR (IPK < 3.5 AND Penghasilan ≤ 3 AND (Tanggungan ≥ 3 OR Prestasi = ya))',
             'result' => 'LAYAK',
             'priority' => 2
         ];
     }
 
-    elseif ($ipk >= 3.0 && $ipk < 3.5 && 
-            $penghasilan <= 5 && $tanggungan >= 3) {
-        $appliedRules[] = [
-            'rule' => 'Rule 3',
-            'condition' => '3.0 ≤ IPK < 3.5 AND Penghasilan ≤ 5 AND Tanggungan ≥ 3',
-            'result' => 'LAYAK',
-            'priority' => 3
-        ];
-    }
-
-    elseif ($ipk >= 3.0 && $ipk < 3.5 && $penghasilan <= 5) {
-        $appliedRules[] = [
-            'rule' => 'Rule 4',
-            'condition' => '3.0 ≤ IPK < 3.5 AND Penghasilan ≤ 5',
-            'result' => 'CUKUP LAYAK',
-            'priority' => 4
-        ];
-    }
-
-    elseif ($ipk < 3.0 && $prestasi == 'ya' && $penghasilan <= 3) {
-        $appliedRules[] = [
-            'rule' => 'Rule 5',
-            'condition' => 'IPK < 3.0 AND Prestasi = ya AND Penghasilan ≤ 3',
-            'result' => 'CUKUP LAYAK',
-            'priority' => 5
-        ];
-    }
-
+    // RULE 3 - TIDAK LAYAK
     else {
         $appliedRules[] = [
-            'rule' => 'Rule 6',
+            'rule' => 'Rule 3',
             'condition' => 'Tidak memenuhi kriteria',
             'result' => 'TIDAK LAYAK',
-            'priority' => 6
+            'priority' => 3
         ];
     }
 
     return $appliedRules;
 }
-
     }
